@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>My Applications</title>
+    <style>
+        body {
+            font-family: "Segoe UI", sans-serif;
+            background: #f4f6f9;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            padding: 20px;
+            color: white;
+            text-align: center;
+        }
+        .container {
+            width: 80%;
+            margin: 30px auto;
+        }
+        .card {
+            background: white;
+            margin-bottom: 15px;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        .job-title {
+            font-weight: bold;
+            font-size: 18px;
+            color: #2c3e50;
+        }
+        .status {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .status-approved { color: #27ae60; }
+        .status-rejected { color: #e74c3c; }
+        .status-pending { color: #f39c12; }
+        .cover-letter {
+            margin-top: 10px;
+            font-style: italic;
+            color: #555;
+        }
+        .reply-text {
+            background: #ecf0f1;
+            padding: 10px;
+            border-radius: 5px;
+            font-style: italic;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h2>📋 My Applications</h2>
+</header>
+
+<div class="container">
+    <div th:if="${#lists.isEmpty(applications)}">
+        <p>No applications found.</p>
+    </div>
+
+    <div th:each="app : ${applications}" class="card">
+        <div class="job-title" th:text="${app.job?.title ?: 'Job Not Available'}"></div>
+        <div>Location: <span th:text="${app.job?.location ?: 'N/A'}"></span></div>
+        <div>Salary: ₹<span th:text="${app.job?.salary ?: 'N/A'}"></span></div>
+        <div class="status">
+            Status: 
+            <span th:text="${app.status}" 
+                  th:class="${#strings.equals(app.status, 'Approved')} ? 'status-approved' : (${#strings.equals(app.status, 'Rejected')} ? 'status-rejected' : 'status-pending')"></span>
+        </div>
+        <div class="cover-letter">Cover Letter: <span th:text="${app.coverLetter}"></span></div>
+        <div th:if="${app.reply}" class="reply-text">
+            <strong>Agency Reply:</strong> <span th:text="${app.reply}"></span>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin - Worker Profile</title>
+    <style>
+        body { font-family: "Segoe UI", sans-serif; background: #f6f9ff; margin: 0; padding: 20px; }
+        .container { width: 90%; max-width: 800px; margin: auto; background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 8px 28px rgba(16,24,40,0.06); }
+        .profile-header { display: flex; align-items: center; gap: 25px; border-bottom: 1px solid #f1f5f9; padding-bottom: 20px; margin-bottom: 20px; }
+        .profile-picture { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 4px solid #e0e7ff; }
+        h2 { margin: 0; font-size: 24px; color: #111827; }
+        .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .details-grid p { margin: 0; font-size: 15px; color: #4b5563; }
+        .details-grid strong { color: #1f2937; display: block; margin-bottom: 4px; font-size: 13px; text-transform: uppercase; }
+        .back-link { display: inline-block; margin-top: 25px; text-decoration: none; background: #2563eb; color: white; padding: 10px 18px; border-radius: 8px; }
+    </style>
+</head>
+<body>
+
+<div class="container" th:if="${worker}">
+    <div class="profile-header">
+        <img th:if="${profilePicture}" th:src="'data:image/jpeg;base64,' + ${profilePicture}" alt="Profile Picture" class="profile-picture">
+        <div>
+            <h2 th:text="${worker.name}"></h2>
+            <p style="font-size: 16px; color: #6b7280;" th:text="${worker.role}"></p>
+        </div>
+    </div>
+
+    <div class="details-grid">
+        <p><strong>Username:</strong> <span th:text="${worker.username ?: 'N/A'}"></span></p>
+        <p><strong>Aadhaar:</strong> <span th:text="${worker.aadharNumber ?: 'N/A'}"></span></p>
+        <p><strong>Date of Birth:</strong> <span th:text="${worker.dob ?: 'N/A'}"></span></p>
+        <p><strong>Gender:</strong> <span th:text="${worker.gender ?: 'N/A'}"></span></p>
+        <p><strong>Phone:</strong> <span th:text="${worker.phone ?: 'N/A'}"></span></p>
+        <p><strong>Emergency Contact:</strong> <span th:text="${worker.emergencyContact ?: 'N/A'}"></span></p>
+        <p style="grid-column: 1 / -1;"><strong>Address:</strong> <span th:text="${worker.address ?: 'N/A'}"></span></p>
+        <p><strong>Status:</strong> <span th:text="${worker.status ?: 'N/A'}"></span></p>
+    </div>
+
+    <a th:href="@{/admin/dashboard}" class="back-link">Back to Dashboard</a>
+</div>
+
+<div class="container" th:unless="${worker}">
+    <h2>Worker not found.</h2>
+</div>
+
+</body>
+</html>

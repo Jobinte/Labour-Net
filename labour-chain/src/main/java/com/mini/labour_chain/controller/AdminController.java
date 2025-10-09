@@ -1,0 +1,138 @@
+package com.mini.labour_chain.controller;
+
+import com.mini.labour_chain.model.Admin;
+import com.mini.labour_chain.model.Agency;
+import com.mini.labour_chain.model.User;
+import com.mini.labour_chain.repository.*;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Base64;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Controller
+@RequestMapping("/admin")
+public class AdminController {
+
+    private final AdminRepository adminRepo;
+    private final UserRepository userRepo;
+    private final AgencyRepository agencyRepo;
+    private final JobRepository jobRepo;
+    private final JobApplicationRepository jobApplicationRepo;
+    private final PasswordEncoder passwordEncoder;
+
+    @Autowired
+    public AdminController(AdminRepository adminRepo, UserRepository userRepo, AgencyRepository agencyRepo, JobRepository jobRepo, JobApplicationRepository jobApplicationRepo, PasswordEncoder passwordEncoder) {
+        this.adminRepo = adminRepo;
+        this.userRepo = userRepo;
+        this.agencyRepo = agencyRepo;
+        this.jobRepo = jobRepo;
+        this.jobApplicationRepo = jobApplicationRepo;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    @GetMapping("/login")
+    public String adminLoginPage() {
+        return "admin_login";
+    }
+
+    @PostMapping("/login")
+    public String login(@RequestParam String username, @RequestParam String password, HttpSession session, Model model) {
+        Admin admin = adminRepo.findByUsernameIgnoreCase(username);
+        if (admin == null || !passwordEncoder.matches(password, admin.getPassword())) {
+            model.addAttribute("error", "Invalid credentials");
+            return "admin_login";
+        }
+        session.setAttribute("loggedInAdmin", admin);
+        return "redirect:/admin/dashboard";
+    }
+
+    @GetMapping("/dashboard")
+    public String dashboard(HttpSession session, Model model) {
+        if (session.getAttribute("loggedInAdmin") == null) return "redirect:/admin/login";
+
+        List<User> allWorkers = userRepo.findAll();
+        List<Agency> allAgencies = agencyRepo.findAll();
+
+        model.addAttribute("pendingWorkers", allWorkers.stream().filter(w -> "Pending".equals(w.getStatus())).collect(Collectors.toList()));
+        model.addAttribute("approvedWorkers", allWorkers.stream().filter(w -> "Approved".equals(w.getStatus())).collect(Collectors.toList()));
+        model.addAttribute("pendingAgencies", allAgencies.stream().filter(a -> "Pending".equals(a.getStatus())).collect(Collectors.toList()));
+        model.addAttribute("approvedAgencies", allAgencies.stream().filter(a -> "Approved".equals(a.getStatus())).collect(Collectors.toList()));
+
+        return "admin_dashboard";
+    }
+
+    @GetMapping("/logout")
+    public String logout(HttpSession session) {
+        session.invalidate();
+        return "redirect:/";
+    }
+
+    @GetMapping("/approve/worker/{id}")
+    public String approveWorker(@PathVariable Long id, HttpSession session) {
+        if (session.getAttribute("loggedInAdmin") == null) return "redirect:/admin/login";
+        userRepo.findById(id).ifPresent(user -> {
+            user.setStatus("Approved");
+            userRepo.save(user);
+        });
+        return "redirect:/admin/dashboard";
+    }
+
+    @GetMapping("/approve/agency/{id}")
+    public String approveAgency(@PathVariable Long id, HttpSession session) {
+        if (session.getAttribute("loggedInAdmin") == null) return "redirect:/admin/login";
+        agencyRepo.findById(id).ifPresent(agency -> {
+            agency.setStatus("Approved");
+            agencyRepo.save(agency);
+        });
+        return "redirect:/admin/dashboard";
+    }
+
+    @GetMapping("/delete/worker/{id}")
+    public String deleteWorker(@PathVariable Long id, HttpSession session) {
+        if (session.getAttribute("loggedInAdmin") == null) return "redirect:/admin/login";
+        userRepo.deleteById(id);
+        return "redirect:/admin/dashboard";
+    }
+
+    @GetMapping("/delete/agency/{id}")
+    public String deleteAgency(@PathVariable Long id, HttpSession session) {
+        if (session.getAttribute("loggedInAdmin") == null) return "redirect:/admin/login";
+        agencyRepo.deleteById(id);
+        return "redirect:/admin/dashboard";
+    }
+
+    @GetMapping("/view/worker/{id}")
+    @Transactional(readOnly = true)
+    public String viewWorkerProfile(@PathVariable Long id, Model model, HttpSession session) {
+        if (session.getAttribute("loggedInAdmin") == null) return "redirect:/admin/login";
+        userRepo.findById(id).ifPresent(worker -> {
+            model.addAttribute("worker", worker);
+            // DEFINITIVE FIX: Use the correct eager-fetching query
+            model.addAttribute("workHistory", jobApplicationRepo.findByWorkerIdWithDetails(worker.getId()));
+            if (worker.getProfilePicture() != null) {
+                model.addAttribute("profilePicture", Base64.getEncoder().encodeToString(worker.getProfilePicture()));
+            }
+        });
+        return "admin_worker_profile";
+    }
+
+    @GetMapping("/view/agency/{id}")
+    @Transactional(readOnly = true)
+    public String viewAgencyProfile(@PathVariable Long id, Model model, HttpSession session) {
+        if (session.getAttribute("loggedInAdmin") == null) return "redirect:/admin/login";
+        agencyRepo.findById(id).ifPresent(agency -> {
+            model.addAttribute("agency", agency);
+            // DEFINITIVE FIX: Use the correct eager-fetching queries
+            model.addAttribute("postedJobs", jobRepo.findByAgency(agency));
+            model.addAttribute("feedback", jobApplicationRepo.findByAgencyIdWithDetails(agency.getId()));
+        });
+        return "admin_agency_profile";
+    }
+}

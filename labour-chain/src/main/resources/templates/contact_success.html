@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Contact Response</title>
+    <style>
+        body{font-family:Segoe UI,Arial;background:#f9fafb;display:flex;align-items:center;justify-content:center;min-height:100vh}
+        .box{background:#fff;padding:40px;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,0.1);text-align:center}
+        h2{margin-bottom:20px;color:#1d4ed8}
+        a{display:inline-block;margin-top:20px;padding:10px 20px;background:#2563eb;color:#fff;text-decoration:none;border-radius:8px}
+        a:hover{background:#1d4ed8}
+    </style>
+</head>
+<body>
+<div class="box">
+    <h2 th:text="${msg}">Message Response</h2>
+    <a th:href="@{/}">Back to Home</a>
+</div>
+</body>
+</html>

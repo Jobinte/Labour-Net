@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Worker Dashboard</title>
+    <style>
+        body {
+            font-family: "Segoe UI", sans-serif;
+            background: #f4f6f9;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            padding: 20px;
+            color: white;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        h2 {
+            margin: 0;
+        }
+        .profile-picture {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 3px solid white;
+            object-fit: cover;
+        }
+        .container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 40px;
+            gap: 20px;
+        }
+        .card {
+            background: white;
+            width: 250px;
+            padding: 25px;
+            text-align: center;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease-in-out;
+        }
+        .card:hover {
+            transform: translateY(-6px);
+        }
+        .icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+            color: #3498db;
+        }
+        a {
+            display: block;
+            margin-top: 10px;
+            padding: 10px;
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+        a:hover {
+            background: #2980b9;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <img th:if="${profilePicture}" th:src="'data:image/jpeg;base64,' + ${profilePicture}" alt="Profile Picture" class="profile-picture">
+    <h2>👷 Worker Dashboard</h2>
+    <p>Welcome, <span th:text="${user.name}"></span> | Username: <span th:text="${user.username}"></span></p>
+    <div th:if="${successMessage}" style="background: #d4edda; color: #155724; padding: 10px; border-radius: 5px; margin: 10px 0;">
+        <span th:text="${successMessage}"></span>
+    </div>
+</header>
+
+<div class="container">
+    <div class="card">
+        <div class="icon">📋</div>
+        <h3>Browse Jobs</h3>
+        <a th:href="@{/jobs}">Browse Jobs</a>
+    </div>
+
+    <div class="card">
+        <div class="icon">📝</div>
+        <h3>My Applications</h3>
+        <a th:href="@{/applications/worker/{id}(id=${user.id})}">My Applications</a>
+    </div>
+
+    <div class="card">
+        <div class="icon">🚪</div>
+        <h3>Logout</h3>
+        <a th:href="@{/workers/logout}">Logout</a>
+    </div>
+</div>
+</body>
+</html>
