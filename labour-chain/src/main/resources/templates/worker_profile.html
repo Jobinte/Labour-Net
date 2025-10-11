@@ -24,6 +24,12 @@
             <div>
                 <h2 th:text="${worker.name}">Worker Name</h2>
                 <p><strong>Role:</strong> <span th:text="${worker.role}"></span></p>
+                <p th:if="${workerRatingsCount > 0}">
+                    <strong>Average Rating:</strong>
+                    <span th:each="i : ${#numbers.sequence(1, T(java.lang.Math).round(avgWorkerRating))}">⭐</span>
+                    <span th:text="${#numbers.formatDecimal(avgWorkerRating, 1, 1)} + ' / 5 (' + workerRatingsCount + ' ratings)'" style="margin-left:6px; color:#4b5563;"></span>
+                </p>
+                <p th:if="${workerRatingsCount == 0}"><strong>Average Rating:</strong> No ratings yet</p>
             </div>
         </div>
         <div class="details">
@@ -41,7 +47,12 @@
                 <tbody>
                     <tr th:each="app : ${workHistory}">
                         <td th:text="${app.job?.title ?: 'N/A'}"></td>
-                        <td th:text="${app.job?.agency?.agencyName ?: 'N/A'}"></td>
+                        <td>
+                            <a th:if="${app.job != null and app.job.agency != null}"
+                               th:href="@{'/agencies/profile/' + ${app.job.agency.id}}"
+                               th:text="${app.job.agency.agencyName}"></a>
+                            <span th:if="${app.job == null or app.job.agency == null}">N/A</span>
+                        </td>
                         <td th:text="${app.status ?: 'N/A'}"></td>
                     </tr>
                 </tbody>
@@ -49,6 +60,39 @@
         </div>
         <div th:if="${workHistory == null or #lists.isEmpty(workHistory)}">
             <p>No work history found.</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Agency Ratings & Feedback</h3>
+        <div th:if="${workHistory != null}">
+            <div th:if="${workHistory.?[workerRating != null].empty}">
+                <p>No ratings yet.</p>
+            </div>
+            <div th:if="${!workHistory.?[workerRating != null].empty}">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Agency</th>
+                            <th>Job</th>
+                            <th>Rating</th>
+                            <th>Feedback</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="app : ${workHistory.?[workerRating != null]}">
+                            <td th:text="${app.job?.agency?.agencyName ?: 'N/A'}"></td>
+                            <td th:text="${app.job?.title ?: 'N/A'}"></td>
+                            <td>
+                                <span th:each="i : ${#numbers.sequence(1, app.workerRating)}">⭐</span>
+                                <span th:each="i : ${#numbers.sequence(1, 5 - app.workerRating)}" style="color:#d1d5db;">⭐</span>
+                                <span style="margin-left:6px; color:#4b5563;" th:text="${app.workerRating} + '/5'"></span>
+                            </td>
+                            <td th:text="${app.workerFeedback}"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>

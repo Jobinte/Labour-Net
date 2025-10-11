@@ -202,7 +202,20 @@ public class AgencyController {
         User worker = userRepository.findById(id).orElse(null);
         if (worker != null) {
             model.addAttribute("worker", worker);
-            model.addAttribute("workHistory", jobApplicationRepository.findByWorkerIdWithDetails(worker.getId()));
+            List<JobApplication> history = jobApplicationRepository.findByWorkerIdWithDetails(worker.getId());
+            model.addAttribute("workHistory", history);
+
+            long ratingsCount = history.stream()
+                    .filter(a -> a.getWorkerRating() != null)
+                    .count();
+            double avgRating = history.stream()
+                    .filter(a -> a.getWorkerRating() != null)
+                    .mapToInt(JobApplication::getWorkerRating)
+                    .average()
+                    .orElse(0.0);
+            model.addAttribute("avgWorkerRating", avgRating);
+            model.addAttribute("workerRatingsCount", ratingsCount);
+
             if (worker.getProfilePicture() != null) {
                 model.addAttribute("profilePicture", Base64.getEncoder().encodeToString(worker.getProfilePicture()));
             }
@@ -214,11 +227,59 @@ public class AgencyController {
     @GetMapping("/profile/{agencyId}")
     @Transactional(readOnly = true)
     public String publicAgencyProfile(@PathVariable Long agencyId, Model model) {
-        Agency agency = agencyRepository.findById(agencyId).orElse(null);
-        if (agency != null) {
+        try {
+            Agency agency = agencyRepository.findById(agencyId).orElse(null);
+            if (agency == null) {
+                // Gracefully handle missing agency
+                return "redirect:/";
+            }
+
             model.addAttribute("agency", agency);
-            model.addAttribute("feedback", jobApplicationRepository.findByAgencyIdWithDetails(agencyId));
+            List<JobApplication> feedback = Collections.emptyList();
+            try {
+                feedback = jobApplicationRepository.findByAgencyIdWithDetails(agencyId);
+            } catch (Exception ignored) {}
+            model.addAttribute("feedback", feedback);
+
+            long agencyRatingsCount = feedback.stream()
+                    .filter(a -> a.getAgencyRating() != null)
+                    .count();
+            double avgAgencyRating = feedback.stream()
+                    .filter(a -> a.getAgencyRating() != null)
+                    .mapToInt(JobApplication::getAgencyRating)
+                    .average()
+                    .orElse(0.0);
+            model.addAttribute("avgAgencyRating", avgAgencyRating);
+            model.addAttribute("agencyRatingsCount", agencyRatingsCount);
+
+            return "public_agency_profile";
+        } catch (Exception ex) {
+            // Fallback to default error page (keeps 500 styling)
+            return "error";
         }
-        return "public_agency_profile";
+    }
+
+    @PostMapping("/rate-worker/{applicationId}")
+    public String rateWorker(@PathVariable Long applicationId,
+                             @RequestParam Integer rating,
+                             @RequestParam String feedback,
+                             HttpSession session,
+                             RedirectAttributes redirectAttributes) {
+        Agency loggedInAgency = (Agency) session.getAttribute("loggedInAgency");
+        if (loggedInAgency == null) {
+            return "redirect:/agencies/login";
+        }
+
+        JobApplication application = jobApplicationRepository.findById(applicationId).orElse(null);
+        if (application != null
+                && application.getJob().getAgency().equals(loggedInAgency)
+                && "Confirmed".equals(application.getConfirmationStatus())) {
+            application.setWorkerRating(rating);
+            application.setWorkerFeedback(feedback);
+            jobApplicationRepository.save(application);
+            redirectAttributes.addFlashAttribute("popupMessage", "✅ Worker rated successfully!");
+        }
+
+        return "redirect:/agencies/dashboard";
     }
 }

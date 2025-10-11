@@ -1,0 +1,62 @@
+# ========================================
+# Labour-Net Configuration Template
+# ========================================
+# Copy this file to src/main/resources/application.properties
+# and update with your actual values
+
+# Database Configuration
+spring.datasource.url=jdbc:mysql://localhost:3306/miniproject
+spring.datasource.username=root
+spring.datasource.password=YOUR_MYSQL_PASSWORD_HERE
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+
+# JPA/Hibernate Configuration
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL8Dialect
+
+# Mail Configuration
+# For Gmail, you need to:
+# 1. Enable 2-Factor Authentication
+# 2. Generate an App Password: https://support.google.com/accounts/answer/185833
+spring.mail.host=smtp.gmail.com
+spring.mail.port=587
+spring.mail.username=YOUR_EMAIL@gmail.com
+spring.mail.password=YOUR_APP_PASSWORD_HERE
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
+
+# Session Configuration
+server.servlet.session.timeout=30m
+server.servlet.session.cookie.http-only=true
+server.servlet.session.cookie.secure=false
+
+# Logging Configuration
+logging.level.com.mini.labour_chain=DEBUG
+logging.level.org.springframework.security=DEBUG
+
+# Error Handling
+server.error.include-message=always
+server.error.include-binding-errors=always
+
+# Server Configuration (optional)
+# server.port=8080
+
+# ========================================
+# Environment Variables (Recommended for Production)
+# ========================================
+# Instead of hardcoding values above, use environment variables:
+# 
+# Linux/Mac:
+# export DB_URL=jdbc:mysql://localhost:3306/miniproject
+# export DB_USERNAME=root
+# export DB_PASSWORD=your_password
+# export MAIL_USERNAME=your_email@gmail.com
+# export MAIL_PASSWORD=your_app_password
+#
+# Windows (PowerShell):
+# $env:DB_URL="jdbc:mysql://localhost:3306/miniproject"
+# $env:DB_USERNAME="root"
+# $env:DB_PASSWORD="your_password"
+# $env:MAIL_USERNAME="your_email@gmail.com"
+# $env:MAIL_PASSWORD="your_app_password"

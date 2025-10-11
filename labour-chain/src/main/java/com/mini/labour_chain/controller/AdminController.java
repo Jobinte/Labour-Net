@@ -115,7 +115,20 @@ public class AdminController {
         userRepo.findById(id).ifPresent(worker -> {
             model.addAttribute("worker", worker);
             // DEFINITIVE FIX: Use the correct eager-fetching query
-            model.addAttribute("workHistory", jobApplicationRepo.findByWorkerIdWithDetails(worker.getId()));
+            var history = jobApplicationRepo.findByWorkerIdWithDetails(worker.getId());
+            model.addAttribute("workHistory", history);
+
+            long ratingsCount = history.stream()
+                    .filter(a -> a.getWorkerRating() != null)
+                    .count();
+            double avgRating = history.stream()
+                    .filter(a -> a.getWorkerRating() != null)
+                    .mapToInt(com.mini.labour_chain.model.JobApplication::getWorkerRating)
+                    .average()
+                    .orElse(0.0);
+            model.addAttribute("avgWorkerRating", avgRating);
+            model.addAttribute("workerRatingsCount", ratingsCount);
+
             if (worker.getProfilePicture() != null) {
                 model.addAttribute("profilePicture", Base64.getEncoder().encodeToString(worker.getProfilePicture()));
             }

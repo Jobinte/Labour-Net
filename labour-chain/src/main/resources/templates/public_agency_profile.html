@@ -23,35 +23,33 @@
 <body>
 
 <div class="container" th:if="${agency}">
-    <div class="card">
         <div class="profile-header">
             <div>
-                <h2 th:text="${agency.agencyName ?: 'N/A'}"></h2>
-                <p><strong>Proprietor:</strong> <span th:text="${agency.proprietorName ?: 'N/A'}"></span></p>
+                <h2 th:text="${agency?.agencyName ?: 'N/A'}"></h2>
+                <p><strong>Proprietor:</strong> <span th:text="${agency?.proprietorName ?: 'N/A'}"></span></p>
             </div>
-            <!-- BULLETPROOF RATING CALCULATION -->
-            <th:block th:if="${feedback != null}">
-                <div th:with="ratings=${feedback.![agencyRating].?[#this != null]}, avgRating=${#aggregates.avg(ratings)}" class="rating-summary">
-                    Avg. Rating: <span th:if="${!ratings.isEmpty()}" th:text="${#numbers.formatDecimal(avgRating, 1, 1)} + ' / 5'"></span>
-                    <span th:if="${ratings.isEmpty()}">Not Yet Rated</span>
-                </div>
-            </th:block>
+            <!-- Rating summary -->
+            <div class="rating-summary">
+                <span th:if="${agencyRatingsCount > 0}" th:text="${#numbers.formatDecimal(avgAgencyRating, 1, 1)} + ' / 5 (' + agencyRatingsCount + ' ratings)'"></span>
+                <span th:if="${agencyRatingsCount == 0}">Not Yet Rated</span>
+            </div>
+
         </div>
         <div class="details">
-            <p><strong>Contact:</strong> <span th:text="${agency.contactNumber ?: 'N/A'}"></span></p>
-            <p><strong>Address:</strong> <span th:text="${agency.address ?: 'N/A'}"></span></p>
-            <p class="bio" th:if="${agency.bio}" th:text="${agency.bio}"></p>
+            <p><strong>Contact:</strong> <span th:text="${agency?.contactNumber ?: 'N/A'}"></span></p>
+            <p><strong>Address:</strong> <span th:text="${agency?.address ?: 'N/A'}"></span></p>
+            <p class="bio" th:if="${agency?.bio}" th:text="${agency.bio}"></p>
         </div>
     </div>
 
     <div class="card">
         <h3>Feedback from Workers</h3>
         <div class="feedback-list">
-            <!-- BULLETPROOF ITERATION -->
+            <!-- Feedback list -->
             <th:block th:if="${feedback != null}">
                 <div th:each="app : ${feedback.?[agencyRating != null]}" class="feedback-item">
-                    <p><span class="feedback-rating" th:text="${app.agencyRating} + ' / 5'"></span> for job: <strong th:text="${app.job?.title ?: 'N/A'}"></strong></p>
-                    <p class="feedback-text" th:if="${app.agencyFeedback}" th:text="'\"' + ${app.agencyFeedback} + '\"'"></p>
+                    <p><span class="feedback-rating" th:text="${app?.agencyRating} + ' / 5'"></span> for job: <strong th:text="${app?.job?.title ?: 'N/A'}"></strong></p>
+                    <p class="feedback-text" th:if="${app?.agencyFeedback}" th:text="'\'' + ${app?.agencyFeedback} + '\''"></p>
                 </div>
                 <div th:if="${feedback.?[agencyRating != null].empty}">
                     <p>No feedback received yet.</p>
@@ -60,9 +58,3 @@
             <div th:if="${feedback == null}">
                  <p>No feedback received yet.</p>
             </div>
-        </div>
-    </div>
-</div>
-
-</body>
-</html>

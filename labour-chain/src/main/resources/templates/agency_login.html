@@ -140,7 +140,6 @@
             <label for="password">Password</label>
             <input type="password" id="password" name="password" required/>
         </div>
-
         <button type="submit">Login</button>
     </form>
 
@@ -149,6 +148,10 @@
     <div class="form-footer">
         <span>Don't have an account? </span>
         <a th:href="@{/agencies/register}">Register here</a>
+    </div>
+
+    <div class="form-footer" style="margin-top:10px;">
+        <a th:href="@{/}"> Home</a>
     </div>
 </div>
 

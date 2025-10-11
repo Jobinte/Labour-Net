@@ -185,11 +185,14 @@
             <canvas id="canvas" width="640" height="480"></canvas>
             <input type="hidden" id="profilePicture" name="profilePicture" required>
         </div>
-
         <button type="submit">Register</button>
     </form>
 
     <p th:if="${message}" th:text="${message}" class="message"></p>
+</div>
+
+<div style="text-align:center;margin-top:10px;font-size:14px;">
+    <a th:href="@{/}" style="color:#2563eb;text-decoration:none;font-weight:500;"> Home</a>
 </div>
 
 <script>
@@ -234,6 +237,7 @@
     });
 
     setupWebcam();
+
 </script>
 
 </body>
