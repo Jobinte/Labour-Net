@@ -98,13 +98,12 @@
                         <td th:text="${w.name ?: 'N/A'}"></td>
                         <td th:text="${w.role ?: 'N/A'}"></td>
                         <td class="actions">
-                            <a th:if="${w.id != null}" th:href="@{'/admin/view/worker/' + ${w.id}}" class="btn-view">View</a>
-                            <a th:if="${w.id != null}" th:href="@{'/admin/delete/worker/' + ${w.id}}" class="btn-delete">Delete</a>
+                            <a th:if="${w.id != null}" th:href="@{|/admin/view/worker/${w.id}|}" class="btn-view">View</a>
+                            <a th:if="${w.id != null}" th:href="@{|/admin/delete/worker/${w.id}|}" class="btn-delete">Delete</a>
                         </td>
                     </tr>
                 </th:block>
                  <tr th:if="${#lists.isEmpty(approvedWorkers)}">
-                    <td colspan="3" class="small-text">No approved workers found.</td>
                 </tr>
             </tbody>
         </table>
@@ -121,14 +120,42 @@
                         <td th:text="${a.agencyName ?: 'N/A'}"></td>
                         <td th:text="${a.licenseNumber ?: 'N/A'}"></td>
                         <td class="actions">
-                            <a th:if="${a.id != null}" th:href="@{'/admin/view/agency/' + ${a.id}}" class="btn-view">View</a>
-                            <a th:if="${a.id != null}" th:href="@{'/admin/delete/agency/' + ${a.id}}" class="btn-delete">Delete</a>
+                            <a th:if="${a.id != null}" th:href="@{|/admin/view/agency/${a.id}|}" class="btn-view">View</a>
+                            <a th:if="${a.id != null}" th:href="@{|/admin/delete/agency/${a.id}|}" class="btn-delete">Delete</a>
                         </td>
                     </tr>
                 </th:block>
                 <tr th:if="${#lists.isEmpty(approvedAgencies)}">
                     <td colspan="3" class="small-text">No approved agencies found.</td>
                 </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- BLACKLIST -->
+    <div class="card">
+        <h2>Blacklist</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>Type</th>
+                <th>ID Value</th>
+                <th>Reason</th>
+                <th>Added At</th>
+            </tr>
+            </thead>
+            <tbody>
+            <th:block th:each="b : ${blacklist}">
+                <tr th:if="${b != null}">
+                    <td th:text="${b.type}"></td>
+                    <td th:text="${b.idValue}"></td>
+                    <td th:text="${b.reason ?: 'N/A'}"></td>
+                    <td th:text="${b.createdAt}"></td>
+                </tr>
+            </th:block>
+            <tr th:if="${#lists.isEmpty(blacklist)}">
+                <td colspan="4" class="small-text">No blacklisted entries.</td>
+            </tr>
             </tbody>
         </table>
     </div>

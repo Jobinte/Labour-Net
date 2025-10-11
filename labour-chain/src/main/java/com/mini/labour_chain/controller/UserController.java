@@ -3,6 +3,7 @@ package com.mini.labour_chain.controller;
 import com.mini.labour_chain.model.AadharVerification;
 import com.mini.labour_chain.model.User;
 import com.mini.labour_chain.repository.AadharVerificationRepository;
+import com.mini.labour_chain.repository.BlacklistRepository;
 import com.mini.labour_chain.repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,12 +22,14 @@ public class UserController {
     private final UserRepository userRepository;
     private final AadharVerificationRepository aadharRepo;
     private final PasswordEncoder passwordEncoder;
+    private final BlacklistRepository blacklistRepo;
 
     @Autowired
-    public UserController(UserRepository userRepository, AadharVerificationRepository aadharRepo, PasswordEncoder passwordEncoder) {
+    public UserController(UserRepository userRepository, AadharVerificationRepository aadharRepo, PasswordEncoder passwordEncoder, BlacklistRepository blacklistRepo) {
         this.userRepository = userRepository;
         this.aadharRepo = aadharRepo;
         this.passwordEncoder = passwordEncoder;
+        this.blacklistRepo = blacklistRepo;
     }
 
     @GetMapping("/register")
@@ -59,6 +62,11 @@ public class UserController {
         AadharVerification record = aadharRepo.findById(aadharNumber).orElse(null);
         if (record == null) {
             model.addAttribute("message", "❌ Invalid Aadhaar Number!");
+            return "worker_register";
+        }
+
+        if (blacklistRepo.existsByIdValue(aadharNumber)) {
+            model.addAttribute("message", "🚫 This Aadhaar number is blacklisted. Registration is not allowed.");
             return "worker_register";
         }
 

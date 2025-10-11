@@ -12,6 +12,8 @@ public interface JobApplicationRepository extends JpaRepository<JobApplication, 
     
     void deleteByJob(Job job);
     List<JobApplication> findByJobIn(List<Job> jobs);
+    void deleteByWorker(com.mini.labour_chain.model.User worker);
+    List<JobApplication> findByWorker(com.mini.labour_chain.model.User worker);
 
     // DEFINITIVE FIX: Eagerly fetch all related entities to prevent LazyInitializationException
     @Query("SELECT ja FROM JobApplication ja LEFT JOIN FETCH ja.job j LEFT JOIN FETCH j.agency WHERE ja.worker.id = :workerId")

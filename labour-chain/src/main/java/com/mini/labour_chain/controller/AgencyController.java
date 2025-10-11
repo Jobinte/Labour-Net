@@ -25,15 +25,17 @@ public class AgencyController {
     private final JobApplicationRepository jobApplicationRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final BlacklistRepository blacklistRepository;
 
     @Autowired
-    public AgencyController(AgencyRepository agencyRepository, AgencyVerificationRepository agencyVerificationRepo, JobRepository jobRepository, JobApplicationRepository jobApplicationRepository, UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public AgencyController(AgencyRepository agencyRepository, AgencyVerificationRepository agencyVerificationRepo, JobRepository jobRepository, JobApplicationRepository jobApplicationRepository, UserRepository userRepository, PasswordEncoder passwordEncoder, BlacklistRepository blacklistRepository) {
         this.agencyRepository = agencyRepository;
         this.agencyVerificationRepo = agencyVerificationRepo;
         this.jobRepository = jobRepository;
         this.jobApplicationRepository = jobApplicationRepository;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.blacklistRepository = blacklistRepository;
     }
 
     @GetMapping("/register")
@@ -66,6 +68,12 @@ public class AgencyController {
         AgencyVerification record = agencyVerificationRepo.findById(licenseNumber).orElse(null);
         if (record == null) {
             model.addAttribute("message", "❌ Invalid License Number!");
+            return "agency_register";
+        }
+
+        // Block registration if license is blacklisted
+        if (blacklistRepository.existsByIdValue(licenseNumber)) {
+            model.addAttribute("message", "🚫 This License Number is blacklisted. Registration is not allowed.");
             return "agency_register";
         }
 

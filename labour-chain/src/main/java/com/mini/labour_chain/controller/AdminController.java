@@ -3,6 +3,8 @@ package com.mini.labour_chain.controller;
 import com.mini.labour_chain.model.Admin;
 import com.mini.labour_chain.model.Agency;
 import com.mini.labour_chain.model.User;
+import com.mini.labour_chain.model.BlacklistEntry;
+import com.mini.labour_chain.model.Job;
 import com.mini.labour_chain.repository.*;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,15 +28,17 @@ public class AdminController {
     private final JobRepository jobRepo;
     private final JobApplicationRepository jobApplicationRepo;
     private final PasswordEncoder passwordEncoder;
+    private final BlacklistRepository blacklistRepo;
 
     @Autowired
-    public AdminController(AdminRepository adminRepo, UserRepository userRepo, AgencyRepository agencyRepo, JobRepository jobRepo, JobApplicationRepository jobApplicationRepo, PasswordEncoder passwordEncoder) {
+    public AdminController(AdminRepository adminRepo, UserRepository userRepo, AgencyRepository agencyRepo, JobRepository jobRepo, JobApplicationRepository jobApplicationRepo, PasswordEncoder passwordEncoder, BlacklistRepository blacklistRepo) {
         this.adminRepo = adminRepo;
         this.userRepo = userRepo;
         this.agencyRepo = agencyRepo;
         this.jobRepo = jobRepo;
         this.jobApplicationRepo = jobApplicationRepo;
         this.passwordEncoder = passwordEncoder;
+        this.blacklistRepo = blacklistRepo;
     }
 
     @GetMapping("/login")
@@ -64,6 +68,8 @@ public class AdminController {
         model.addAttribute("approvedWorkers", allWorkers.stream().filter(w -> "Approved".equals(w.getStatus())).collect(Collectors.toList()));
         model.addAttribute("pendingAgencies", allAgencies.stream().filter(a -> "Pending".equals(a.getStatus())).collect(Collectors.toList()));
         model.addAttribute("approvedAgencies", allAgencies.stream().filter(a -> "Approved".equals(a.getStatus())).collect(Collectors.toList()));
+
+        model.addAttribute("blacklist", blacklistRepo.findAll());
 
         return "admin_dashboard";
     }
@@ -97,14 +103,46 @@ public class AdminController {
     @GetMapping("/delete/worker/{id}")
     public String deleteWorker(@PathVariable Long id, HttpSession session) {
         if (session.getAttribute("loggedInAdmin") == null) return "redirect:/admin/login";
-        userRepo.deleteById(id);
+        userRepo.findById(id).ifPresent(worker -> {
+            // remove dependent job applications first to avoid FK constraint errors
+            jobApplicationRepo.deleteByWorker(worker);
+            // add to blacklist by aadhar number
+            if (worker.getAadharNumber() != null && !blacklistRepo.existsByIdValue(worker.getAadharNumber())) {
+                BlacklistEntry e = new BlacklistEntry();
+                e.setType("WORKER");
+                e.setIdValue(worker.getAadharNumber());
+                e.setReason("Deleted by admin");
+                blacklistRepo.save(e);
+            }
+            userRepo.delete(worker);
+        });
         return "redirect:/admin/dashboard";
     }
 
     @GetMapping("/delete/agency/{id}")
     public String deleteAgency(@PathVariable Long id, HttpSession session) {
         if (session.getAttribute("loggedInAdmin") == null) return "redirect:/admin/login";
-        agencyRepo.deleteById(id);
+        agencyRepo.findById(id).ifPresent(agency -> {
+            // delete applications for this agency's jobs first
+            List<Job> jobs = jobRepo.findByAgency(agency);
+            if (jobs != null) {
+                for (Job j : jobs) {
+                    jobApplicationRepo.deleteByJob(j);
+                }
+                // then delete the jobs themselves
+                for (Job j : jobs) {
+                    jobRepo.delete(j);
+                }
+            }
+            if (agency.getLicenseNumber() != null && !blacklistRepo.existsByIdValue(agency.getLicenseNumber())) {
+                BlacklistEntry e = new BlacklistEntry();
+                e.setType("AGENCY");
+                e.setIdValue(agency.getLicenseNumber());
+                e.setReason("Deleted by admin");
+                blacklistRepo.save(e);
+            }
+            agencyRepo.delete(agency);
+        });
         return "redirect:/admin/dashboard";
     }
 
