@@ -32,6 +32,9 @@ public class SecurityConfig {
                         // Static resources
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/static/**").permitAll()
 
+                        // Public API for homepage chatbot
+                        .requestMatchers("/api/chat").permitAll()
+
                         // Allow everything else for now (session-based auth)
                         .anyRequest().permitAll()
                 )
@@ -47,4 +50,5 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 }
+
 

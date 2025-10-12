@@ -93,7 +93,7 @@
             <strong>Location:</strong> <span th:text="${job.location}">City</span>
         </div>
         <div class="job-info">
-            <strong>Salary:</strong> <span class="salary" th:text="${job.salary}">5000</span> / month
+            <strong>Salary:</strong> <span class="salary" th:text="${@inrFormatter.fmt(job.salary)}">₹5,000.00</span> / month
         </div>
         <div class="job-info">
             <strong>Agency:</strong> <span th:text="${job.agency.agencyName}">Agency Name</span>

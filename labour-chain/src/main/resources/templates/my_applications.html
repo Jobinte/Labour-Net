@@ -72,7 +72,7 @@
                th:text="${app.job.agency.agencyName}"></a>
             <span th:if="${app.job == null or app.job.agency == null}">N/A</span>
         </div>
-        <div>Salary: ₹<span th:text="${app.job?.salary ?: 'N/A'}"></span></div>
+        <div>Salary: <span th:text="${app.job != null ? @inrFormatter.fmt(app.job.salary) : 'N/A'}">₹0.00</span></div>
         <div class="status">
             Status: 
             <span th:text="${app.status}" 
