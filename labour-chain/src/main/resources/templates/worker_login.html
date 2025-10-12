@@ -138,6 +138,9 @@
         <div class="form-group">
             <label for="password">Password</label>
             <input type="password" id="password" name="password" required/>
+            <div style="text-align:right;margin-top:6px">
+                <button type="button" id="togglePassword" style="background:transparent;border:none;color:#2563eb;font-weight:500;cursor:pointer;padding:0">Show</button>
+            </div>
         </div>
         <button type="submit">Login</button>
     </form>
@@ -153,6 +156,20 @@
         <a th:href="@{/}"> Home</a>
     </div>
 </div>
+
+<script>
+  const pw = document.getElementById('password');
+  const toggle = document.getElementById('togglePassword');
+  if (pw && toggle) {
+    toggle.addEventListener('click', () => {
+      const showing = pw.type === 'text';
+      pw.type = showing ? 'password' : 'text';
+      toggle.textContent = showing ? 'Show' : 'Hide';
+    });
+  }
+  const form = document.querySelector('form');
+  if (form) form.addEventListener('submit', () => { if (pw) pw.type = 'password'; if (toggle) toggle.textContent = 'Show'; });
+</script>
 
 </body>
 </html>

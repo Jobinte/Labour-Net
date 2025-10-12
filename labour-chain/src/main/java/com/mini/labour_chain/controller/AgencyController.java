@@ -2,6 +2,7 @@ package com.mini.labour_chain.controller;
 
 import com.mini.labour_chain.model.*;
 import com.mini.labour_chain.repository.*;
+import com.mini.labour_chain.service.MailService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,9 +27,10 @@ public class AgencyController {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final BlacklistRepository blacklistRepository;
+    private final MailService mailService;
 
     @Autowired
-    public AgencyController(AgencyRepository agencyRepository, AgencyVerificationRepository agencyVerificationRepo, JobRepository jobRepository, JobApplicationRepository jobApplicationRepository, UserRepository userRepository, PasswordEncoder passwordEncoder, BlacklistRepository blacklistRepository) {
+    public AgencyController(AgencyRepository agencyRepository, AgencyVerificationRepository agencyVerificationRepo, JobRepository jobRepository, JobApplicationRepository jobApplicationRepository, UserRepository userRepository, PasswordEncoder passwordEncoder, BlacklistRepository blacklistRepository, MailService mailService) {
         this.agencyRepository = agencyRepository;
         this.agencyVerificationRepo = agencyVerificationRepo;
         this.jobRepository = jobRepository;
@@ -36,6 +38,7 @@ public class AgencyController {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.blacklistRepository = blacklistRepository;
+        this.mailService = mailService;
     }
 
     @GetMapping("/register")
@@ -161,6 +164,12 @@ public class AgencyController {
             application.setReply(reply);
             jobApplicationRepository.save(application);
             redirectAttributes.addFlashAttribute("popupMessage", "Reply sent successfully!");
+            // Notify worker
+            mailService.sendIfEmail(
+                    application.getWorker().getUsername(),
+                    "Update on your job application",
+                    "Hello " + application.getWorker().getName() + ",\n\nAgency '" + loggedInAgency.getAgencyName() + "' sent a reply to your application for '" + application.getJob().getTitle() + "'.\n\nReply: " + reply + "\n\nThanks,\nLabour-Net Team"
+            );
         }
 
         return "redirect:/agencies/dashboard";
@@ -178,6 +187,12 @@ public class AgencyController {
             application.setStatus("Approved");
             jobApplicationRepository.save(application);
             redirectAttributes.addFlashAttribute("popupMessage", "Application approved successfully!");
+            // Notify worker
+            mailService.sendIfEmail(
+                    application.getWorker().getUsername(),
+                    "Your application was approved",
+                    "Hello " + application.getWorker().getName() + ",\n\nGood news! Your application for '" + application.getJob().getTitle() + "' was approved by '" + loggedInAgency.getAgencyName() + "'.\n\nPlease check your dashboard for next steps.\n\nThanks,\nLabour-Net Team"
+            );
         }
 
         return "redirect:/agencies/dashboard";
@@ -195,6 +210,12 @@ public class AgencyController {
             application.setStatus("Rejected");
             jobApplicationRepository.save(application);
             redirectAttributes.addFlashAttribute("popupMessage", "Application rejected successfully!");
+            // Notify worker
+            mailService.sendIfEmail(
+                    application.getWorker().getUsername(),
+                    "Your application was rejected",
+                    "Hello " + application.getWorker().getName() + ",\n\nYour application for '" + application.getJob().getTitle() + "' was rejected by '" + loggedInAgency.getAgencyName() + "'.\n\nYou can apply to other jobs on Labour-Net.\n\nThanks,\nLabour-Net Team"
+            );
         }
 
         return "redirect:/agencies/dashboard";

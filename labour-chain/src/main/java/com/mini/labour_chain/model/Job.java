@@ -15,6 +15,9 @@ public class Job {
     private String description;
     private String location;
     private double salary;
+    // DAILY, WEEKLY, or MONTHLY
+    @Column(name = "salary_period")
+    private String salaryPeriod = "MONTHLY";
 
     private String status = "OPEN"; // Default status is OPEN
 
@@ -37,6 +40,9 @@ public class Job {
 
     public double getSalary() { return salary; }
     public void setSalary(double salary) { this.salary = salary; }
+
+    public String getSalaryPeriod() { return salaryPeriod; }
+    public void setSalaryPeriod(String salaryPeriod) { this.salaryPeriod = salaryPeriod; }
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }

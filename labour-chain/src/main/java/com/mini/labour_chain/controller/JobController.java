@@ -5,6 +5,10 @@ import com.mini.labour_chain.repository.JobApplicationRepository;
 import com.mini.labour_chain.repository.JobRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -30,10 +34,38 @@ public class JobController {
 
     @GetMapping
     @Transactional(readOnly = true)
-    public String listJobs(Model model, HttpSession session) {
-        model.addAttribute("jobs", jobRepository.findAllWithAgency().stream()
-                .filter(job -> "OPEN".equals(job.getStatus()))
-                .collect(Collectors.toList()));
+    public String listJobs(Model model,
+                           HttpSession session,
+                           @RequestParam(value = "q", required = false) String q,
+                           @RequestParam(value = "location", required = false) String location,
+                           @RequestParam(value = "sort", required = false, defaultValue = "newest") String sort,
+                           @RequestParam(value = "page", defaultValue = "0") int page,
+                           @RequestParam(value = "size", defaultValue = "8") int size) {
+
+        Sort sortSpec = switch (sort == null ? "newest" : sort) {
+            case "salaryAsc" -> Sort.by(Sort.Direction.ASC, "salary");
+            case "salaryDesc" -> Sort.by(Sort.Direction.DESC, "salary");
+            case "oldest" -> Sort.by(Sort.Direction.ASC, "id");
+            default -> Sort.by(Sort.Direction.DESC, "id"); // newest
+        };
+        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1), sortSpec);
+        Page<Job> result = jobRepository.searchOpen(
+                (q == null || q.isBlank()) ? null : q,
+                (location == null || location.isBlank()) ? null : location,
+                null,
+                null,
+                pageable
+        );
+
+        model.addAttribute("jobs", result.getContent());
+        model.addAttribute("totalPages", result.getTotalPages());
+        model.addAttribute("currentPage", result.getNumber());
+        model.addAttribute("pageSize", result.getSize());
+
+        // Keep filter values in the model to persist in the UI
+        model.addAttribute("q", q);
+        model.addAttribute("location", location);
+        model.addAttribute("sort", sort);
 
         User loggedInUser = (User) session.getAttribute("loggedInUser");
         if (loggedInUser != null) {
@@ -105,6 +137,7 @@ public class JobController {
         job.setDescription(updatedJob.getDescription());
         job.setLocation(updatedJob.getLocation());
         job.setSalary(updatedJob.getSalary());
+        job.setSalaryPeriod(updatedJob.getSalaryPeriod());
         jobRepository.save(job);
 
         redirectAttributes.addFlashAttribute("popupMessage", "✅ Job updated successfully!");

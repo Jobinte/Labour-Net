@@ -6,6 +6,7 @@ import com.mini.labour_chain.model.User;
 import com.mini.labour_chain.model.BlacklistEntry;
 import com.mini.labour_chain.model.Job;
 import com.mini.labour_chain.repository.*;
+import com.mini.labour_chain.service.MailService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,9 +30,10 @@ public class AdminController {
     private final JobApplicationRepository jobApplicationRepo;
     private final PasswordEncoder passwordEncoder;
     private final BlacklistRepository blacklistRepo;
+    private final MailService mailService;
 
     @Autowired
-    public AdminController(AdminRepository adminRepo, UserRepository userRepo, AgencyRepository agencyRepo, JobRepository jobRepo, JobApplicationRepository jobApplicationRepo, PasswordEncoder passwordEncoder, BlacklistRepository blacklistRepo) {
+    public AdminController(AdminRepository adminRepo, UserRepository userRepo, AgencyRepository agencyRepo, JobRepository jobRepo, JobApplicationRepository jobApplicationRepo, PasswordEncoder passwordEncoder, BlacklistRepository blacklistRepo, MailService mailService) {
         this.adminRepo = adminRepo;
         this.userRepo = userRepo;
         this.agencyRepo = agencyRepo;
@@ -39,6 +41,7 @@ public class AdminController {
         this.jobApplicationRepo = jobApplicationRepo;
         this.passwordEncoder = passwordEncoder;
         this.blacklistRepo = blacklistRepo;
+        this.mailService = mailService;
     }
 
     @GetMapping("/login")
@@ -86,6 +89,12 @@ public class AdminController {
         userRepo.findById(id).ifPresent(user -> {
             user.setStatus("Approved");
             userRepo.save(user);
+            // Notify worker via email if username is an email
+            mailService.sendIfEmail(
+                    user.getUsername(),
+                    "Your Labour-Net worker account has been approved",
+                    "Hello " + user.getName() + ",\n\nYour worker account has been approved. You can now log in and apply for jobs.\n\nThanks,\nLabour-Net Team"
+            );
         });
         return "redirect:/admin/dashboard";
     }
@@ -96,6 +105,12 @@ public class AdminController {
         agencyRepo.findById(id).ifPresent(agency -> {
             agency.setStatus("Approved");
             agencyRepo.save(agency);
+            // Notify agency via email if username is an email
+            mailService.sendIfEmail(
+                    agency.getUsername(),
+                    "Your Labour-Net agency account has been approved",
+                    "Hello " + agency.getAgencyName() + ",\n\nYour agency account has been approved. You can now log in and post jobs.\n\nThanks,\nLabour-Net Team"
+            );
         });
         return "redirect:/admin/dashboard";
     }

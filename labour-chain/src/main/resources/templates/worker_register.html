@@ -148,6 +148,9 @@
         <div class="form-group">
             <label for="password">Password</label>
             <input type="password" id="password" name="password" required/>
+            <div style="text-align:right;margin-top:6px">
+                <button type="button" id="togglePassword" style="background:transparent;border:none;color:#2563eb;font-weight:500;cursor:pointer;padding:0">Show</button>
+            </div>
         </div>
         
         <div class="form-group">
@@ -236,6 +239,19 @@
     });
 
     setupWebcam();
+
+    // Password Show/Hide toggle
+    const regPw = document.getElementById('password');
+    const regToggle = document.getElementById('togglePassword');
+    if (regPw && regToggle) {
+        regToggle.addEventListener('click', () => {
+            const showing = regPw.type === 'text';
+            regPw.type = showing ? 'password' : 'text';
+            regToggle.textContent = showing ? 'Show' : 'Hide';
+        });
+    }
+    const regForm = document.querySelector('form');
+    if (regForm) regForm.addEventListener('submit', () => { if (regPw) regPw.type = 'password'; if (regToggle) regToggle.textContent = 'Show'; });
 
 </script>
 
