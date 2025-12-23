@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project version="4">
-  <component name="ProjectModuleManager">
-    <modules>
-      <module fileurl="file://$PROJECT_DIR$/labour-chain/labour-chain.iml" filepath="$PROJECT_DIR$/labour-chain/labour-chain.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/labour-net.iml" filepath="$PROJECT_DIR$/.idea/labour-net.iml" />
-    </modules>
-  </component>
-</project>
