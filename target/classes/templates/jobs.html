@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Available Jobs</title>
+    <style>
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: #f9fafc;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background: linear-gradient(135deg, #2980b9, #2ecc71);
+            padding: 20px;
+            color: white;
+            text-align: center;
+        }
+        h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+        .container {
+            width: 90%;
+            margin: 30px auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 20px;
+            transition: transform 0.2s ease-in-out;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .job-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .job-desc {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 15px;
+            min-height: 50px;
+        }
+        .job-info {
+            font-size: 14px;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        .salary {
+            font-weight: bold;
+            color: #27ae60;
+        }
+        .apply-btn, .applied-btn {
+            display: inline-block;
+            padding: 10px 18px;
+            margin-top: 15px;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            text-align: center;
+        }
+        .apply-btn {
+            background: #3498db;
+            transition: background 0.3s;
+            cursor: pointer;
+        }
+        .apply-btn:hover {
+            background: #2980b9;
+        }
+        .applied-btn {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Available Job Openings</h1>
+</header>
+
+<div style="width:90%;max-width:1200px;margin:20px auto;display:grid;grid-template-columns:280px 1fr;gap:20px;align-items:start">
+    <!-- Sidebar Filters -->
+    <aside style="background:#fff;border-radius:10px;box-shadow:0 4px 10px rgba(0,0,0,.06);padding:16px;position:sticky;top:12px;height:fit-content">
+        <form method="get" action="">
+            <div style="margin-bottom:12px">
+                <label style="display:block;font-size:12px;color:#475569;margin-bottom:6px">Keyword</label>
+                <input type="text" name="q" th:value="${q}" placeholder="Title or description" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px"/>
+            </div>
+            <div style="margin-bottom:12px">
+                <label style="display:block;font-size:12px;color:#475569;margin-bottom:6px">Location</label>
+                <input type="text" name="location" th:value="${location}" placeholder="City or area" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px"/>
+            </div>
+            <div style="margin-bottom:12px">
+                <label style="display:block;font-size:12px;color:#475569;margin-bottom:6px">Sort by</label>
+                <select name="sort" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px" th:value="${sort}">
+                    <option value="newest">Newest</option>
+                    <option value="oldest">Oldest</option>
+                    <option value="salaryAsc">Salary: Low to High</option>
+                    <option value="salaryDesc">Salary: High to Low</option>
+                </select>
+            </div>
+            <button type="submit" style="background:#2563eb;color:#fff;padding:10px 14px;border:none;border-radius:8px;font-weight:600;cursor:pointer;width:100%">Apply</button>
+        </form>
+    </aside>
+
+    <!-- Results Grid -->
+    <div class="container" style="margin:0">
+    <div class="card" th:each="job : ${jobs}">
+        <div class="job-title" th:text="${job.title}">Job Title</div>
+        <div class="job-desc" th:text="${job.description}">Job Description</div>
+        <div class="job-info">
+            <strong>Location:</strong> <span th:text="${job.location}">City</span>
+        </div>
+        <div class="job-info">
+            <strong>Salary:</strong>
+            <span class="salary" th:text="${@inrFormatter.fmt(job.salary)}">₹5,000.00</span>
+            <span th:text="${#strings.equals(job.salaryPeriod, 'DAILY') ? '/ day' : (#strings.equals(job.salaryPeriod, 'WEEKLY') ? '/ week' : '/ month')}">/ month</span>
+        </div>
+        <div class="job-info">
+            <strong>Agency:</strong>
+            <a th:href="@{'/agencies/profile/' + ${job.agency.id}}" th:text="${job.agency.agencyName}" style="color:#2563eb;text-decoration:none">Agency Name</a>
+        </div>
+
+<!-- Pagination -->
+<div th:if="${totalPages > 1}" style="width:90%;max-width:1200px;margin:10px auto 30px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:center">
+    <a th:each="p : ${#numbers.sequence(0, totalPages-1)}"
+       th:href="@{|/jobs?page=${p}&size=${pageSize}&q=${q}&location=${location}&sort=${sort}|}"
+       th:text="${p + 1}"
+        style="padding:8px 12px;border-radius:8px;border:1px solid #cbd5e1;text-decoration:none;color:#0f172a"
+       th:styleappend="${p} == ${currentPage} ? ';background:#2563eb;color:#fff;border-color:#2563eb' : ''">
+        1
+    </a>
+</div>
+        <!-- DYNAMIC BUTTON -->
+        <div th:if="${appliedJobIds.contains(job.id)}">
+            <a href="#" class="applied-btn">Applied</a>
+        </div>
+        <div th:unless="${appliedJobIds.contains(job.id)}" style="display:flex;gap:10px;flex-wrap:wrap">
+            <a th:href="@{/jobs/apply/{id}(id=${job.id})}" class="apply-btn">Apply Now</a>
+            <a th:href="@{'/agencies/profile/' + ${job.agency.id}}" class="applied-btn" style="background:#10b981">View Agency</a>
+        </div>
+    </div>
+</div>
+
+<script th:if="${popupMessage}">
+    alert('[[${popupMessage}]]');
+</script>
+
+</body>
+</html>

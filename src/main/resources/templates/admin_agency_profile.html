@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin - Agency Profile</title>
+    <style>
+        body { font-family: "Segoe UI", sans-serif; background: #f6f9ff; margin: 0; padding: 20px; }
+        .container { width: 90%; max-width: 900px; margin: auto; }
+        .card { background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 8px 28px rgba(16,24,40,0.06); margin-bottom: 20px; }
+        h2 { margin: 0 0 20px 0; font-size: 24px; color: #111827; border-bottom: 1px solid #f1f5f9; padding-bottom: 15px; }
+        h3 { font-size: 18px; color: #111827; margin: 0 0 15px 0; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; }
+        .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+        .details-grid p { margin: 0; font-size: 15px; color: #4b5563; }
+        .details-grid strong { color: #1f2937; display: block; margin-bottom: 4px; font-size: 13px; text-transform: uppercase; }
+        .bio { grid-column: 1 / -1; font-style: italic; background: #f9fafb; padding: 15px; border-radius: 8px; margin-top: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+        th { font-weight: 700; color: #6b7280; }
+        .back-link { display: inline-block; margin-top: 25px; text-decoration: none; background: #2563eb; color: white; padding: 12px 20px; border-radius: 8px; }
+    </style>
+</head>
+<body>
+
+<div class="container" th:if="${agency}">
+    <div class="card">
+        <h2 th:text="${agency.agencyName ?: 'N/A'}"></h2>
+        <div class="details-grid">
+            <p><strong>Username:</strong> <span th:text="${agency.username ?: 'N/A'}"></span></p>
+            <p><strong>License Number:</strong> <span th:text="${agency.licenseNumber ?: 'N/A'}"></span></p>
+            <p><strong>Proprietor:</strong> <span th:text="${agency.proprietorName ?: 'N/A'}"></span></p>
+            <p><strong>Contact:</strong> <span th:text="${agency.contactNumber ?: 'N/A'}"></span></p>
+            <p style="grid-column: 1 / -1;"><strong>Address:</strong> <span th:text="${agency.address ?: 'N/A'}"></span></p>
+            <p><strong>Status:</strong> <span th:text="${agency.status ?: 'N/A'}"></span></p>
+            <p class="bio" th:if="${agency.bio}"><strong>Bio:</strong> <span th:text="${agency.bio}"></span></p>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Posted Jobs</h3>
+        <table>
+            <thead><tr><th>Job Title</th><th>Location</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr th:each="job : ${postedJobs}">
+                    <td th:text="${job?.title ?: 'N/A'}"></td>
+                    <td th:text="${job?.location ?: 'N/A'}"></td>
+                    <td th:text="${job?.description ?: 'N/A'}"></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(postedJobs)}">
+                    <td colspan="3" style="text-align:center; color: #6b7280;">This agency has not posted any jobs.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <a th:href="@{/admin/dashboard}" class="back-link">Back to Dashboard</a>
+</div>
+
+<div class="container" th:unless="${agency}">
+    <h2>Agency not found.</h2>
+</div>
+
+</body>
+</html>

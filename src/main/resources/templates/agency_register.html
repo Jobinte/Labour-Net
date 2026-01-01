@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Agency Registration</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-dark: #1d4ed8;
+            --background-color: #f8fafc;
+            --form-background: #ffffff;
+            --text-color: #0f172a;
+            --label-color: #334155;
+            --border-color: #cbd5e1;
+            --shadow-color: rgba(0, 0, 0, 0.08);
+            --success-color: #16a34a;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 40px 20px;
+            box-sizing: border-box;
+        }
+
+        .form-container {
+            background-color: var(--form-background);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px var(--shadow-color);
+            width: 100%;
+            max-width: 480px;
+        }
+
+        h2 {
+            text-align: center;
+            font-size: 24px;
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 30px;
+            color: var(--text-color);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--label-color);
+        }
+
+        input[type="text"],
+        input[type="password"],
+        textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: 'Poppins', sans-serif;
+            box-sizing: border-box;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+        }
+
+        button[type="submit"] {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 10px;
+        }
+
+        button[type="submit"]:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .message {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: var(--success-color);
+            font-weight: 500;
+        }
+
+        .form-footer {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 14px;
+        }
+
+        .form-footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .form-footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <h2>Agency Registration</h2>
+    <form th:action="@{/agencies/register}" method="post">
+
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" required/>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <div style="position:relative;display:flex;align-items:center;gap:8px">
+                <input type="password" id="password" name="password" required style="flex:1"/>
+                <button type="button" id="togglePassword" style="background:transparent;border:none;color:#2563eb;font-weight:500;cursor:pointer;padding:4px 6px">Show</button>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="licenseNumber">License Number</label>
+            <input type="text" id="licenseNumber" name="licenseNumber" required/>
+        </div>
+
+        <div class="form-group">
+            <label for="agencyName">Agency Name</label>
+            <input type="text" id="agencyName" name="agencyName" required/>
+        </div>
+
+        <div class="form-group">
+            <label for="bio">Bio</label>
+            <textarea id="bio" name="bio" placeholder="Tell us about your agency..."></textarea>
+        </div>
+
+        <button type="submit">Register</button>
+    </form>
+
+    <p th:if="${message}" th:text="${message}" class="message"></p>
+
+    <div class="form-footer">
+        <span>Already have an account? </span>
+        <a th:href="@{/agencies/login}">Login here</a>
+    </div>
+
+    <div class="form-footer" style="margin-top:10px;">
+        <a th:href="@{/}">Home</a>
+    </div>
+</div>
+
+<script>
+  const regPw = document.getElementById('password');
+  const regToggle = document.getElementById('togglePassword');
+  if (regPw && regToggle) {
+    regToggle.addEventListener('click', () => {
+      const showing = regPw.type === 'text';
+      regPw.type = showing ? 'password' : 'text';
+      regToggle.textContent = showing ? 'Show' : 'Hide';
+    });
+  }
+  const regForm = document.querySelector('form');
+  if (regForm) regForm.addEventListener('submit', () => { if (regPw) regPw.type = 'password'; if (regToggle) regToggle.textContent = 'Show'; });
+</script>
+
+</body>
+</html>

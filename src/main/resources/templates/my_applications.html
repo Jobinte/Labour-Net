@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>My Applications</title>
+    <style>
+        body {
+            font-family: "Segoe UI", sans-serif;
+            background: #f4f6f9;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            padding: 20px;
+            color: white;
+            text-align: center;
+        }
+        .container {
+            width: 80%;
+            margin: 30px auto;
+        }
+        .card {
+            background: white;
+            margin-bottom: 15px;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        .job-title {
+            font-weight: bold;
+            font-size: 18px;
+            color: #2c3e50;
+        }
+        .status {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .status-approved { color: #27ae60; }
+        .status-rejected { color: #e74c3c; }
+        .status-pending { color: #f39c12; }
+        .cover-letter {
+            margin-top: 10px;
+            font-style: italic;
+            color: #555;
+        }
+        .reply-text {
+            background: #ecf0f1;
+            padding: 10px;
+            border-radius: 5px;
+            font-style: italic;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h2>📋 My Applications</h2>
+</header>
+<div class="container">
+    <div th:if="${#lists.isEmpty(applications)}">
+        <p>No applications found.</p>
+    </div>
+
+    <div th:each="app : ${applications}" class="card">
+        <div class="job-title" th:text="${app.job?.title ?: 'Job Not Available'}"></div>
+        <div>Location: <span th:text="${app.job?.location ?: 'N/A'}"></span></div>
+        <div>
+            Agency:
+            <a th:if="${app.job != null and app.job.agency != null}"
+               th:href="@{'/agencies/profile/' + ${app.job.agency.id}}"
+               th:text="${app.job.agency.agencyName}"></a>
+            <span th:if="${app.job == null or app.job.agency == null}">N/A</span>
+        </div>
+        <div>Salary: <span th:text="${app.job != null ? @inrFormatter.fmt(app.job.salary) : 'N/A'}">₹0.00</span></div>
+        <div class="status">
+            Status: 
+            <span th:text="${app.status}" 
+                  th:class="${#strings.equals(app.status, 'Approved')} ? 'status-approved' : (${#strings.equals(app.status, 'Rejected')} ? 'status-rejected' : 'status-pending')"></span>
+        </div>
+        <div class="cover-letter">Cover Letter: <span th:text="${app.coverLetter}"></span></div>
+        <div th:if="${app.reply}" class="reply-text">
+            <strong>Agency Reply:</strong> <span th:text="${app.reply}"></span>
+        </div>
+
+        <!-- Confirm Job CTA (if approved and not yet confirmed) -->
+        <div th:if="${#strings.equals(app.status, 'Approved') and (app.confirmationStatus == null or !#strings.equals(app.confirmationStatus, 'Confirmed'))}" style="margin-top: 12px;">
+            <a th:href="@{'/applications/confirm/' + ${app.id}}" style="background:#22c55e;color:white;padding:8px 12px;border-radius:6px;text-decoration:none;font-weight:600;">Confirm Job</a>
+        </div>
+
+        <!-- Rate Agency CTA (only after confirmed, and not already rated) -->
+        <div th:if="${#strings.equals(app.confirmationStatus, 'Confirmed')}" style="margin-top: 12px;">
+            <button th:if="${app.agencyRating == null}" 
+                    th:attr="onclick=|openAgencyRatingModal(${app.id}, '${app.job?.agency?.agencyName}', '${app.job?.title}')|"
+                    style="background:#f59e0b;color:white;padding:8px 12px;border:none;border-radius:6px;font-weight:600;cursor:pointer;">
+                Rate Agency
+            </button>
+            <span th:if="${app.agencyRating != null}" style="color:#059669;font-weight:600;">✓ You rated this agency</span>
+        </div>
+    </div>
+</div>
+
+<!--Agency Rating Modal -->
+<div id="agencyRatingModal" style="display:none;position:fixed;z-index:1000;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.5);">
+  <div style="background:#fff;margin:10% auto;max-width:520px;padding:20px;border-radius:12px;position:relative;">
+    <span onclick="closeAgencyRatingModal()" style="position:absolute;right:16px;top:10px;font-size:24px;cursor:pointer;color:#6b7280;">&times;</span>
+    <h3 style="margin-top:0;">Rate Agency</h3>
+    <p><strong>Agency:</strong> <span id="agencyName"></span></p>
+    <p><strong>Job:</strong> <span id="jobTitle"></span></p>
+    <form id="agencyRatingForm" method="post" style="margin-top:10px;">
+      <div style="margin-bottom:10px;">
+        <label style="display:block;margin-bottom:6px;font-weight:600;">Rating (1-5):</label>
+        <label><input type="radio" name="rating" value="1" required> ⭐ 1</label>
+        <label style="margin-left:10px;"><input type="radio" name="rating" value="2"> ⭐ 2</label>
+        <label style="margin-left:10px;"><input type="radio" name="rating" value="3"> ⭐ 3</label>
+        <label style="margin-left:10px;"><input type="radio" name="rating" value="4"> ⭐ 4</label>
+        <label style="margin-left:10px;"><input type="radio" name="rating" value="5"> ⭐ 5</label>
+      </div>
+      <div style="margin-bottom:10px;">
+        <label style="display:block;margin-bottom:6px;font-weight:600;">Feedback</label>
+        <textarea name="feedback" rows="4" required style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;"></textarea>
+      </div>
+      <button type="submit" style="background:#2563eb;color:#fff;padding:10px 16px;border:none;border-radius:6px;font-weight:600;width:100%;cursor:pointer;">Submit</button>
+    </form>
+  </div>
+</div>
+
+<script th:inline="javascript">
+/*<![CDATA[*/
+  function openAgencyRatingModal(appId, agencyName, jobTitle) {
+    document.getElementById('agencyName').textContent = agencyName || 'N/A';
+    document.getElementById('jobTitle').textContent = jobTitle || 'N/A';
+    document.getElementById('agencyRatingForm').action = `/applications/rate-agency/${appId}`;
+    document.getElementById('agencyRatingModal').style.display = 'block';
+  }
+  function closeAgencyRatingModal() {
+    document.getElementById('agencyRatingModal').style.display = 'none';
+    document.getElementById('agencyRatingForm').reset();
+  }
+  window.onclick = function(e){
+    const modal = document.getElementById('agencyRatingModal');
+    if (e.target === modal) closeAgencyRatingModal();
+  }
+  const popupMessage = /*[[${popupMessage}]]*/ null;
+  if (popupMessage) alert(popupMessage);
+/*]]*/
+</script>
+
+</body>
+</html>

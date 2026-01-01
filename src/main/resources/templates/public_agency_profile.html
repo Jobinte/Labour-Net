@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Agency Profile</title>
+    <style>
+        body { font-family: "Segoe UI", sans-serif; background: #f9fafc; margin: 0; padding: 20px; }
+        .container { width: 90%; max-width: 900px; margin: 0 auto; }
+        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        .profile-header { display: flex; align-items: center; gap: 25px; margin-bottom: 20px; }
+        h2 { margin: 0; font-size: 24px; color: #111827; }
+        h3 { margin-top: 0; margin-bottom: 15px; color: #111827; border-bottom: 2px solid #f3f4f6; padding-bottom: 10px; }
+        .details p { margin: 5px 0; color: #4b5563; }
+        .details strong { color: #1f2937; }
+        .rating-summary { font-size: 18px; font-weight: bold; color: #f59e0b; }
+        .feedback-list .feedback-item { border-bottom: 1px solid #f3f4f6; padding: 10px 0; }
+        .feedback-list .feedback-item:last-child { border-bottom: none; }
+        .feedback-rating { font-weight: bold; }
+        .feedback-text { font-style: italic; color: #4b5563; }
+        .bio { font-style: italic; background: #f9fafb; padding: 15px; border-radius: 8px; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="container" th:if="${agency}">
+        <div class="profile-header">
+            <div>
+                <h2 th:text="${agency?.agencyName ?: 'N/A'}"></h2>
+                <p><strong>Proprietor:</strong> <span th:text="${agency?.proprietorName ?: 'N/A'}"></span></p>
+            </div>
+            <!-- Rating summary -->
+            <div class="rating-summary">
+                <span th:if="${agencyRatingsCount > 0}" th:text="${#numbers.formatDecimal(avgAgencyRating, 1, 1)} + ' / 5 (' + agencyRatingsCount + ' ratings)'"></span>
+                <span th:if="${agencyRatingsCount == 0}">Not Yet Rated</span>
+            </div>
+
+        </div>
+        <div class="details">
+            <p><strong>Contact:</strong> <span th:text="${agency?.contactNumber ?: 'N/A'}"></span></p>
+            <p><strong>Address:</strong> <span th:text="${agency?.address ?: 'N/A'}"></span></p>
+            <p class="bio" th:if="${agency?.bio}" th:text="${agency.bio}"></p>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Feedback from Workers</h3>
+        <div class="feedback-list">
+            <!-- Feedback list -->
+            <th:block th:if="${feedback != null}">
+                <div th:each="app : ${feedback.?[agencyRating != null]}" class="feedback-item">
+                    <p><span class="feedback-rating" th:text="${app?.agencyRating} + ' / 5'"></span> for job: <strong th:text="${app?.job?.title ?: 'N/A'}"></strong></p>
+                    <p class="feedback-text" th:if="${app?.agencyFeedback}" th:text="'\'' + ${app?.agencyFeedback} + '\''"></p>
+                </div>
+                <div th:if="${feedback.?[agencyRating != null].empty}">
+                    <p>No feedback received yet.</p>
+                </div>
+            </th:block>
+            <div th:if="${feedback == null}">
+                 <p>No feedback received yet.</p>
+            </div>

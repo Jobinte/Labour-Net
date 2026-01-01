@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Worker Registration</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-dark: #1d4ed8;
+            --background-color: #f8fafc;
+            --form-background: #ffffff;
+            --text-color: #0f172a;
+            --label-color: #334155;
+            --border-color: #cbd5e1;
+            --shadow-color: rgba(0, 0, 0, 0.08);
+            --success-color: #16a34a;
+            --danger-color: #dc2626;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .form-container {
+            background-color: var(--form-background);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px var(--shadow-color);
+            width: 100%;
+            max-width: 450px;
+        }
+
+        h2 {
+            text-align: center;
+            font-size: 24px;
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 30px;
+            color: var(--text-color);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--label-color);
+        }
+
+        input[type="text"],
+        input[type="password"],
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: 'Poppins', sans-serif;
+            box-sizing: border-box;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        #captureBtn {
+            background-color: var(--success-color);
+            margin-top: 0;
+        }
+
+        .message {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: var(--danger-color);
+            font-weight: 500;
+        }
+        
+        #webcam-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        #webcam {
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            width: 100%;
+            max-width: 300px;
+        }
+        #canvas {
+            display: none;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <h2>Worker Registration</h2>
+    <form th:action="@{/workers/register}" method="post">
+
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" required/>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required/>
+            <div style="text-align:right;margin-top:6px">
+                <button type="button" id="togglePassword" style="background:transparent;border:none;color:#2563eb;font-weight:500;cursor:pointer;padding:0">Show</button>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="aadharNumber">Aadhaar Number</label>
+            <input type="text" id="aadharNumber" name="aadharNumber" required/>
+        </div>
+
+        <div class="form-group">
+            <label for="role">Role</label>
+            <select id="role" name="role" required>
+                <option disabled selected value="">-- Select a role --</option>
+                <option>Plumber</option>
+                <option>Electrician</option>
+                <option>Mason</option>
+                <option>Carpenter</option>
+                <option>Painter</option>
+                <option>Welder</option>
+                <option>Driver</option>
+                <option>Mechanic</option>
+                <option>Others</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="emergencyContact">Emergency Contact</label>
+            <input type="text" id="emergencyContact" name="emergencyContact" required pattern="\d{10}" title="Emergency contact must be 10 digits"/>
+        </div>
+        
+        <div class="form-group">
+            <label>Profile Picture</label>
+            <div id="webcam-container">
+                <video id="webcam" autoplay playsinline></video>
+                <button type="button" id="captureBtn">Capture Photo</button>
+            </div>
+            <canvas id="canvas" width="640" height="480"></canvas>
+            <input type="hidden" id="profilePicture" name="profilePicture" required>
+        </div>
+        <button type="submit">Register</button>
+    </form>
+
+    <p th:if="${message}" th:text="${message}" class="message"></p>
+    <div class="form-footer" style="text-align:center;margin-top:12px;font-size:14px;">
+        <a th:href="@{/}" style="color:#2563eb;text-decoration:none;font-weight:500;">Home</a>
+    </div>
+</div>
+
+<script>
+    const video = document.getElementById('webcam');
+    const canvas = document.getElementById('canvas');
+    const captureBtn = document.getElementById('captureBtn');
+    const profilePictureInput = document.getElementById('profilePicture');
+
+    async function setupWebcam() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            video.srcObject = stream;
+        } catch (err) {
+            console.error("Error accessing webcam: ", err);
+            alert("Could not access webcam. Please ensure you have a webcam and have granted permission.");
+        }
+    }
+
+    captureBtn.addEventListener('click', () => {
+        const context = canvas.getContext('2d');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        const dataUrl = canvas.toDataURL('image/jpeg');
+        profilePictureInput.value = dataUrl;
+        
+        const stream = video.srcObject;
+        const tracks = stream.getTracks();
+        tracks.forEach(track => track.stop());
+        video.srcObject = null;
+        
+        captureBtn.textContent = 'Photo Captured!';
+        captureBtn.style.backgroundColor = '#16a34a';
+        video.style.display = 'none';
+        
+        const capturedImage = new Image();
+        capturedImage.src = dataUrl;
+        capturedImage.style.width = '100%';
+        capturedImage.style.borderRadius = '8px';
+        document.getElementById('webcam-container').insertBefore(capturedImage, captureBtn);
+    });
+
+    setupWebcam();
+
+    // Password Show/Hide toggle
+    const regPw = document.getElementById('password');
+    const regToggle = document.getElementById('togglePassword');
+    if (regPw && regToggle) {
+        regToggle.addEventListener('click', () => {
+            const showing = regPw.type === 'text';
+            regPw.type = showing ? 'password' : 'text';
+            regToggle.textContent = showing ? 'Show' : 'Hide';
+        });
+    }
+    const regForm = document.querySelector('form');
+    if (regForm) regForm.addEventListener('submit', () => { if (regPw) regPw.type = 'password'; if (regToggle) regToggle.textContent = 'Show'; });
+
+</script>
+
+</body>
+</html>

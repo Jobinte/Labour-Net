@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Worker Profile</title>
+    <style>
+        body { font-family: "Segoe UI", sans-serif; background: #f9fafc; margin: 0; padding: 20px; }
+        .container { width: 90%; max-width: 900px; margin: 0 auto; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        .profile-header { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; }
+        .profile-picture { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid #e5e7eb; }
+        h2 { margin: 0; font-size: 24px; color: #111827; }
+        h3 { margin-top: 0; margin-bottom: 15px; color: #111827; border-bottom: 2px solid #f3f4f6; padding-bottom: 10px; }
+        .details p { margin: 5px 0; color: #4b5563; }
+        .details strong { color: #1f2937; }
+    </style>
+</head>
+<body>
+
+<div class="container" th:if="${worker}">
+    <div class="card">
+        <div class="profile-header">
+            <img th:if="${profilePicture}" th:src="'data:image/jpeg;base64,' + ${profilePicture}" alt="Profile Picture" class="profile-picture">
+            <div>
+                <h2 th:text="${worker.name}">Worker Name</h2>
+                <p><strong>Role:</strong> <span th:text="${worker.role}"></span></p>
+                <p th:if="${workerRatingsCount > 0}">
+                    <strong>Average Rating:</strong>
+                    <span th:each="i : ${#numbers.sequence(1, T(java.lang.Math).round(avgWorkerRating))}">⭐</span>
+                    <span th:text="${#numbers.formatDecimal(avgWorkerRating, 1, 1)} + ' / 5 (' + workerRatingsCount + ' ratings)'" style="margin-left:6px; color:#4b5563;"></span>
+                </p>
+                <p th:if="${workerRatingsCount == 0}"><strong>Average Rating:</strong> No ratings yet</p>
+            </div>
+        </div>
+        <div class="details">
+            <p><strong>Username:</strong> <span th:text="${worker.username}"></span></p>
+            <p><strong>Phone:</strong> <span th:text="${worker.phone}"></span></p>
+            <p><strong>Address:</strong> <span th:text="${worker.address}"></span></p>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Work History</h3>
+        <div th:if="${workHistory != null and not #lists.isEmpty(workHistory)}">
+             <table>
+                <thead><tr><th>Job Title</th><th>Agency</th><th>Status</th></tr></thead>
+                <tbody>
+                    <tr th:each="app : ${workHistory}">
+                        <td th:text="${app.job?.title ?: 'N/A'}"></td>
+                        <td>
+                            <a th:if="${app.job != null and app.job.agency != null}"
+                               th:href="@{'/agencies/profile/' + ${app.job.agency.id}}"
+                               th:text="${app.job.agency.agencyName}"></a>
+                            <span th:if="${app.job == null or app.job.agency == null}">N/A</span>
+                        </td>
+                        <td th:text="${app.status ?: 'N/A'}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div th:if="${workHistory == null or #lists.isEmpty(workHistory)}">
+            <p>No work history found.</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Agency Ratings & Feedback</h3>
+        <div th:if="${workHistory != null}">
+            <div th:if="${workHistory.?[workerRating != null].empty}">
+                <p>No ratings yet.</p>
+            </div>
+            <div th:if="${!workHistory.?[workerRating != null].empty}">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Agency</th>
+                            <th>Job</th>
+                            <th>Rating</th>
+                            <th>Feedback</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="app : ${workHistory.?[workerRating != null]}">
+                            <td th:text="${app.job?.agency?.agencyName ?: 'N/A'}"></td>
+                            <td th:text="${app.job?.title ?: 'N/A'}"></td>
+                            <td>
+                                <span th:each="i : ${#numbers.sequence(1, app.workerRating)}">⭐</span>
+                                <span th:each="i : ${#numbers.sequence(1, 5 - app.workerRating)}" style="color:#d1d5db;">⭐</span>
+                                <span style="margin-left:6px; color:#4b5563;" th:text="${app.workerRating} + '/5'"></span>
+                            </td>
+                            <td th:text="${app.workerFeedback}"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

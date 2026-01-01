@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Worker Options</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* --- Root Variables for Colors --- */
+        :root {
+            --primary-color: #2563eb;
+            --primary-dark: #1d4ed8;
+            --background-color: #f8fafc;
+            --card-background: #ffffff;
+            --text-color: #0f172a;
+            --muted-text-color: #64748b;
+            --border-color: #cbd5e1;
+            --shadow-color: rgba(0, 0, 0, 0.08);
+        }
+
+        /* --- General Body Styles --- */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* --- Main Content Card --- */
+        .choice-container {
+            background-color: var(--card-background);
+            padding: 40px 50px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px var(--shadow-color);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 26px;
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: var(--muted-text-color);
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        /* --- Button Grouping & Spacing --- */
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px; /* Space between buttons */
+        }
+
+        /* --- General Button Styles --- */
+        .btn {
+            display: block;
+            padding: 14px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        /* --- Primary Button (Login) --- */
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        /* --- Secondary Button (Register) --- */
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Small Home button */
+        .home-link {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            background: #ffffff;
+            color: var(--primary-color);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 6px 12px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 2px 6px var(--shadow-color);
+        }
+    </style>
+</head>
+<body>
+
+<a class="home-link" th:href="@{/}">Home</a>
+
+<div class="choice-container">
+    <h2>Worker Access</h2>
+    <p>Log in to your account or create a new one to get started.</p>
+    <div class="button-group">
+        <a href="/workers/login" class="btn btn-primary">Login</a>
+        <a href="/workers/register" class="btn btn-secondary">Register</a>
+    </div>
+</div>
+
+</body>
+</html>

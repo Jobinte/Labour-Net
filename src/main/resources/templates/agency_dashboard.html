@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Agency Dashboard</title>
+    <style>
+        :root {
+            --primary-color: #2563eb; --primary-dark: #1d4ed8; --background-color: #f9fafc;
+            --card-bg: #ffffff; --text-color: #1f2937; --muted-text: #6b7280;
+            --border-color: #e5e7eb; --shadow: 0 4px 10px rgba(0,0,0,0.08);
+            --approve-color: #22c55e; --reject-color: #ef4444; --view-color: #3b82f6;
+            --edit-color: #f59e0b; --toggle-open-color: #84cc16; --toggle-closed-color: #78716c;
+        }
+        body { font-family: "Segoe UI", sans-serif; background: var(--background-color); margin: 0; padding: 0; color: var(--text-color); }
+        header { background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); padding: 20px 40px; color: white; display: flex; justify-content: space-between; align-items: center; }
+        h2, h3 { margin: 0; }
+        .header-left p { margin: 5px 0 0 0; opacity: 0.9; }
+        .header-right a { color: white; text-decoration: none; margin-left: 20px; font-weight: 600; }
+        .btn-post-job { background-color: #10b981; padding: 10px 18px; border-radius: 8px; }
+        .container { width: 90%; max-width: 1200px; margin: 40px auto; }
+        .card { background: var(--card-bg); padding: 25px; border-radius: 12px; box-shadow: var(--shadow); margin-bottom: 25px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--border-color); }
+        th { background-color: #f9fafb; font-weight: 600; }
+        .actions a, .actions button, .status-badge { margin-right: 8px; text-decoration: none; padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; }
+        .btn-approve { background-color: var(--approve-color); color: white; }
+        .btn-reject { background-color: var(--reject-color); color: white; }
+        .btn-view { background-color: var(--view-color); color: white; }
+        .btn-edit { background-color: var(--edit-color); color: white; }
+        .btn-delete { background-color: var(--reject-color); color: white; }
+        .btn-toggle-open { background-color: var(--toggle-open-color); color: white; }
+        .btn-toggle-closed { background-color: var(--toggle-closed-color); color: white; }
+        .status-badge { display: inline-block; }
+        .status-open { background-color: #dcfce7; color: #166534; }
+        .status-closed { background-color: #fee2e2; color: #991b1b; }
+        .status-approved { background-color: #dcfce7; color: #166534; }
+        .status-rejected { background-color: #fee2e2; color: #991b1b; }
+        .btn-cover-letter { background-color: #a855f7; color: white; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); }
+        .modal-content { background-color: #fefefe; margin: 10% auto; padding: 30px; border: 1px solid #888; width: 80%; max-width: 600px; border-radius: 12px; position: relative; }
+        .close { color: #aaa; position: absolute; top: 15px; right: 25px; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .modal-section { margin-bottom: 20px; }
+        .modal-section h4 { margin: 0 0 10px 0; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
+        .modal-section p { background: #f9fafb; padding: 10px; border-radius: 6px; }
+        .reply-form textarea { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #d1d5db; margin-top: 8px; box-sizing: border-box; }
+        .reply-form button { margin-top: 10px; background-color: var(--primary-color); color: white; padding: 10px 15px; border: none; border-radius: 6px; cursor: pointer; }
+    </style>
+</head>
+<body>
+<header>
+    <div class="header-left">
+        <h2>🏢 Agency Dashboard</h2>
+        <p>Welcome, <span th:text="${agency.agencyName}"></span></p>
+    </div>
+    <div class="header-right">
+        <a th:href="@{/jobs/post}" class="btn-post-job">Post a New Job</a>
+        <a th:href="@{/agencies/logout}">Logout</a>
+    </div>
+</header>
+
+<div class="container">
+    <!-- MY JOB POSTINGS -->
+    <div class="card">
+        <h3>My Job Postings</h3>
+        <table>
+            <thead><tr><th>Title</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody>
+                <tr th:each="job : ${postedJobs}">
+                    <td th:text="${job.title}"></td>
+                    <td>
+                        <span th:if="${#strings.equals(job.status, 'OPEN')}" class="status-badge status-open">OPEN</span>
+                        <span th:if="${#strings.equals(job.status, 'CLOSED')}" class="status-badge status-closed">CLOSED</span>
+                    </td>
+                    <td class="actions">
+                        <a th:href="@{'/jobs/edit/' + ${job.id}}" class="btn-edit">Edit</a>
+                        <a th:href="@{'/jobs/delete/' + ${job.id}}" class="btn-delete">Delete</a>
+                        <a th:if="${#strings.equals(job.status, 'OPEN')}" th:href="@{'/jobs/toggle-status/' + ${job.id}}" class="btn-toggle-closed">Stop Recruiting</a>
+                        <a th:if="${#strings.equals(job.status, 'CLOSED')}" th:href="@{'/jobs/toggle-status/' + ${job.id}}" class="btn-toggle-open">Restart Recruiting</a>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(postedJobs)}">
+            </tbody>
+        </table>
+    </div>
+
+    <!-- JOB APPLICATIONS RECEIVED -->
+    <div class="card">
+        <h3>Job Applications Received</h3>
+        <table>
+            <thead><tr><th>Applicant</th><th>Job</th><th>Cover Letter</th><th>Status & Actions</th></tr></thead>
+            <tbody>
+                <tr th:each="app, iter : ${applications}">
+                    <td><a th:href="@{'/agencies/worker/' + ${app.worker.id}}" th:text="${app.worker.name}" class="btn-view"></a></td>
+                    <td th:text="${app.job.title}"></td>
+                    <td><button th:attr="onclick=|openCoverLetterModal(${iter.index})|" class="btn-cover-letter">View</button></td>
+                    <td class="actions">
+                        <div th:if="${#strings.equals(app.status, 'Pending')}">
+                            <a th:href="@{'/agencies/application/approve/' + ${app.id}}" class="btn-approve">Approve</a>
+                            <a th:href="@{'/agencies/application/reject/' + ${app.id}}" class="btn-reject">Reject</a>
+                        </div>
+                        <div th:if="${#strings.equals(app.status, 'Approved')}">
+                            <span class="status-badge status-approved">Approved</span>
+                            <button th:if="${app.workerRating == null and #strings.equals(app.confirmationStatus, 'Confirmed')}" th:attr="onclick=|openRatingModal(${iter.index})|" style="background-color: #f59e0b; color: white; margin-left: 8px; padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">Rate Worker</button>
+                            <span th:if="${app.workerRating != null}" style="color: #059669; margin-left: 8px; font-weight: 600;">✓ Rated</span>
+                        </div>
+                        <div th:if="${#strings.equals(app.status, 'Rejected')}">
+                            <span class="status-badge status-rejected">Rejected</span>
+                        </div>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(applications)}">
+                    <td colspan="4" style="text-align: center;">No applications found.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Cover Letter Modal -->
+<div id="coverLetterModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-section"><h4>Cover Letter</h4><p id="modalCoverLetter"></p></div>
+        <div class="modal-section"><h4>Your Reply</h4><p id="modalReply"></p></div>
+        <div id="modalReplyFormContainer" class="modal-section">
+            <h4>Send a Reply</h4>
+            <form id="modalReplyForm" method="post" class="rating-form"><textarea name="reply" placeholder="Write your reply here..."></textarea><button type="submit">Send</button></form>
+        </div>
+    </div>
+</div>
+
+<!-- Worker Rating Modal -->
+<div id="ratingModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeRatingModal()">&times;</span>
+        <div class="modal-section">
+            <h4>Rate Worker</h4>
+            <p><strong>Worker:</strong> <span id="ratingWorkerName"></span></p>
+            <p><strong>Job:</strong> <span id="ratingJobTitle"></span></p>
+        </div>
+        <div class="modal-section">
+            <form id="ratingForm" method="post" style="margin-top: 20px;">
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">Rating (1-5 stars):</label>
+                    <div style="display: flex; gap: 10px;">
+                        <label style="cursor: pointer;"><input type="radio" name="rating" value="1" required> ⭐ 1</label>
+                        <label style="cursor: pointer;"><input type="radio" name="rating" value="2" required> ⭐ 2</label>
+                        <label style="cursor: pointer;"><input type="radio" name="rating" value="3" required> ⭐ 3</label>
+                        <label style="cursor: pointer;"><input type="radio" name="rating" value="4" required> ⭐ 4</label>
+                        <label style="cursor: pointer;"><input type="radio" name="rating" value="5" required> ⭐ 5</label>
+                    </div>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">Feedback:</label>
+                    <textarea name="feedback" rows="4" required placeholder="Write your feedback about this worker..." style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #d1d5db; box-sizing: border-box; font-family: 'Segoe UI', sans-serif;"></textarea>
+                </div>
+                <button type="submit" style="background-color: #2563eb; color: white; padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; width: 100%;">Submit Rating</button>
+            </form>
+        </div>
+    </div>
+    </div>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const applications = /*[[${applications}]]*/ [];
+    const coverLetterModal = document.getElementById('coverLetterModal');
+
+    function openCoverLetterModal(index) {
+        const app = applications[index];
+        document.getElementById('modalCoverLetter').textContent = app.coverLetter || 'N/A';
+        const modalReply = document.getElementById('modalReply');
+        const replyFormContainer = document.getElementById('modalReplyFormContainer');
+        if (app.reply) {
+            modalReply.textContent = app.reply;
+            replyFormContainer.style.display = 'none';
+        } else {
+            modalReply.textContent = 'You have not replied yet.';
+            replyFormContainer.style.display = 'block';
+        }
+        document.getElementById('modalReplyForm').action = `/agencies/application/reply/${app.id}`;
+        coverLetterModal.style.display = 'block';
+    }
+
+    function closeCoverLetterModal() { coverLetterModal.style.display = 'none'; }
+
+    const ratingModal = document.getElementById('ratingModal');
+
+    function openRatingModal(index) {
+        const app = applications[index];
+        document.getElementById('ratingWorkerName').textContent = app.worker.name;
+        document.getElementById('ratingJobTitle').textContent = app.job.title;
+        document.getElementById('ratingForm').action = `/agencies/rate-worker/${app.id}`;
+        ratingModal.style.display = 'block';
+    }
+
+    function closeRatingModal() { 
+        ratingModal.style.display = 'none';
+        document.getElementById('ratingForm').reset();
+    }
+
+    window.onclick = function(event) {
+        if (event.target == coverLetterModal) closeCoverLetterModal();
+        if (event.target == ratingModal) closeRatingModal();
+    }
+    
+    const popupMessage = /*[[${popupMessage}]]*/ null;
+    if (popupMessage) alert(popupMessage);
+    /*]]>*/
+</script>
+
+</body>
+</html>

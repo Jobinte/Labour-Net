@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8" />
+    <title>Admin Dashboard</title>
+    <style>
+        :root {
+            --bg: #f6f9ff; --card: #fff; --primary: #0ea5e9; --accent: #2563eb; --danger: #ef4444;
+            --muted: #6b7280; --radius: 12px; --shadow: 0 8px 28px rgba(16,24,40,0.06);
+            --approve-bg: #dcfce7; --approve-text: #16a34a;
+            --view-bg: #e0e7ff; --view-text: #4338ca;
+            --delete-bg: #fee2e2; --delete-text: #b91c1c;
+        }
+        body { margin: 0; background: var(--bg); color: #0f172a; font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+        header {
+            background: linear-gradient(90deg, var(--accent), #7c3aed);
+            color: white; padding: 22px 28px; border-bottom-left-radius: 18px; border-bottom-right-radius: 18px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        header h1 { margin: 0; font-size: 20px; }
+        .wrap { width: 95%; max-width: 1200px; margin: 24px auto; }
+        .card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 22px; margin-bottom: 22px; }
+        .card h2 { margin: 0 0 15px 0; font-size: 18px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+        th { font-weight: 700; color: var(--muted); font-size: 13px; text-transform: uppercase; }
+        .actions a { margin-right: 6px; text-decoration: none; padding: 8px 12px; border-radius: 8px; font-weight: 600; }
+        .btn-approve { background-color: var(--approve-bg); color: var(--approve-text); }
+        .btn-view { background-color: var(--view-bg); color: var(--view-text); }
+        .btn-delete { background-color: var(--delete-bg); color: var(--delete-text); }
+        .logout { background: #ffffff44; color: white; padding: 8px 12px; border-radius: 8px; text-decoration: none; }
+        .small-text { font-size: 13px; color: var(--muted); text-align: center; }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Admin Dashboard</h1>
+    <a th:href="@{/admin/logout}" class="logout">Logout</a>
+</header>
+
+<div class="wrap">
+    <!-- PENDING WORKER REGISTRATIONS -->
+    <div class="card">
+        <h2>Pending Worker Registrations</h2>
+        <table>
+            <thead><tr><th>Name</th><th>Role</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody>
+                <th:block th:each="w : ${pendingWorkers}">
+                    <tr th:if="${w != null}">
+                        <td th:text="${w.name ?: 'N/A'}"></td>
+                        <td th:text="${w.role ?: 'N/A'}"></td>
+                        <td th:text="${w.status ?: 'N/A'}"></td>
+                        <td class="actions">
+                            <a th:if="${w.id != null}" th:href="@{'/admin/approve/worker/' + ${w.id}}" class="btn-approve">Approve</a>
+                            <a th:if="${w.id != null}" th:href="@{'/admin/view/worker/' + ${w.id}}" class="btn-view">View</a>
+                        </td>
+                    </tr>
+                </th:block>
+                <tr th:if="${#lists.isEmpty(pendingWorkers)}">
+                    <td colspan="4" class="small-text">No pending worker registrations.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- PENDING AGENCY REGISTRATIONS -->
+    <div class="card">
+        <h2>Pending Agency Registrations</h2>
+        <table>
+            <thead><tr><th>Agency Name</th><th>License</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody>
+                <th:block th:each="a : ${pendingAgencies}">
+                    <tr th:if="${a != null}">
+                        <td th:text="${a.agencyName ?: 'N/A'}"></td>
+                        <td th:text="${a.licenseNumber ?: 'N/A'}"></td>
+                        <td th:text="${a.status ?: 'N/A'}"></td>
+                        <td class="actions">
+                            <a th:if="${a.id != null}" th:href="@{'/admin/approve/agency/' + ${a.id}}" class="btn-approve">Approve</a>
+                            <a th:if="${a.id != null}" th:href="@{'/admin/view/agency/' + ${a.id}}" class="btn-view">View</a>
+                        </td>
+                    </tr>
+                </th:block>
+                <tr th:if="${#lists.isEmpty(pendingAgencies)}">
+                    <td colspan="4" class="small-text">No pending agency registrations.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- APPROVED WORKERS -->
+    <div class="card">
+        <h2>Approved Workers</h2>
+        <table>
+            <thead><tr><th>Name</th><th>Role</th><th>Action</th></tr></thead>
+            <tbody>
+                <th:block th:each="w : ${approvedWorkers}">
+                    <tr th:if="${w != null}">
+                        <td th:text="${w.name ?: 'N/A'}"></td>
+                        <td th:text="${w.role ?: 'N/A'}"></td>
+                        <td class="actions">
+                            <a th:if="${w.id != null}" th:href="@{|/admin/view/worker/${w.id}|}" class="btn-view">View</a>
+                            <a th:if="${w.id != null}" th:href="@{|/admin/delete/worker/${w.id}|}" class="btn-delete">Delete</a>
+                        </td>
+                    </tr>
+                </th:block>
+                 <tr th:if="${#lists.isEmpty(approvedWorkers)}">
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- APPROVED AGENCIES -->
+    <div class="card">
+        <h2>Approved Agencies</h2>
+        <table>
+            <thead><tr><th>Agency Name</th><th>License</th><th>Action</th></tr></thead>
+            <tbody>
+                <th:block th:each="a : ${approvedAgencies}">
+                    <tr th:if="${a != null}">
+                        <td th:text="${a.agencyName ?: 'N/A'}"></td>
+                        <td th:text="${a.licenseNumber ?: 'N/A'}"></td>
+                        <td class="actions">
+                            <a th:if="${a.id != null}" th:href="@{|/admin/view/agency/${a.id}|}" class="btn-view">View</a>
+                            <a th:if="${a.id != null}" th:href="@{|/admin/delete/agency/${a.id}|}" class="btn-delete">Delete</a>
+                        </td>
+                    </tr>
+                </th:block>
+                <tr th:if="${#lists.isEmpty(approvedAgencies)}">
+                    <td colspan="3" class="small-text">No approved agencies found.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- BLACKLIST -->
+    <div class="card">
+        <h2>Blacklist</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>Type</th>
+                <th>ID Value</th>
+                <th>Reason</th>
+                <th>Added At</th>
+            </tr>
+            </thead>
+            <tbody>
+            <th:block th:each="b : ${blacklist}">
+                <tr th:if="${b != null}">
+                    <td th:text="${b.type}"></td>
+                    <td th:text="${b.idValue}"></td>
+                    <td th:text="${b.reason ?: 'N/A'}"></td>
+                    <td th:text="${b.createdAt}"></td>
+                </tr>
+            </th:block>
+            <tr th:if="${#lists.isEmpty(blacklist)}">
+                <td colspan="4" class="small-text">No blacklisted entries.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>
