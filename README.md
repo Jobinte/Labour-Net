@@ -1,5 +1,4 @@
 # Labour-Net
-# Labour-Net
 
 Labour-Net is a Maven-based Java project for managing labour/workforce-related functionality. This repository contains the project skeleton, build tooling, and the source folder for the application's Java code.
 
